@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Secure Checkout | Amber's Alchemy Apothecary</title>
+  <meta name="robots" content="noindex" />
+  <link rel="icon" type="image/svg+xml" href="images/icon-192.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=EB+Garamond:wght@400;500;700&display=swap" rel="stylesheet" />
+  <script src="https://js.stripe.com/v3/"></script>
+  <style>
+    :root{ --bg:#150b26; --panel:rgba(31,19,54,.92); --gold:#d4af37; --gold-soft:#b8a07a; --text:#f4e8d0; --text-dim:#cdbb94; --line:rgba(212,175,55,.22); --danger:#ffcfb0; }
+    *{box-sizing:border-box} body{margin:0;min-height:100vh;color:var(--text);font-family:'EB Garamond',Georgia,serif;background:radial-gradient(circle at top,#2a1a4a 0%,var(--bg) 55%)}
+    a{color:var(--gold)}
+    .shell{max-width:1140px;margin:0 auto;padding:24px}
+    .topbar{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:24px;flex-wrap:wrap}
+    .brand h1{margin:0;font-family:'Cinzel Decorative',serif;font-size:1.3rem;color:var(--gold)}
+    .brand p{margin:6px 0 0;color:var(--text-dim);font-size:.95rem}
+    .back-link{text-decoration:none;border:1px solid var(--line);padding:10px 14px;border-radius:999px;color:var(--gold);white-space:nowrap}
+    .layout{display:grid;grid-template-columns:360px minmax(0,1fr);gap:24px;align-items:start}
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:0 24px 60px rgba(0,0,0,.28)}
+    .summary{padding:22px;position:sticky;top:20px}
+    .summary h2,.checkout-panel h2{margin:0 0 10px;font-family:'Cinzel Decorative',serif;color:var(--gold);font-size:1.15rem}
+    .summary p,.checkout-panel p{color:var(--text-dim);line-height:1.6}
+    .mode-badge{display:inline-block;border:1px solid var(--line);color:var(--gold);padding:6px 10px;border-radius:999px;font-size:.85rem;margin-bottom:14px}
+    .summary-list{display:flex;flex-direction:column;gap:14px;margin:18px 0 20px}
+    .item{display:grid;grid-template-columns:1fr auto;gap:8px 14px;padding-bottom:14px;border-bottom:1px solid rgba(212,175,55,.12)}
+    .item strong{color:var(--text);font-weight:600}
+    .item .meta{color:var(--text-dim);font-size:.9rem}
+    .item .amt{color:var(--gold);font-weight:700;white-space:nowrap}
+    .totals{display:grid;gap:8px;margin-top:10px;padding-top:14px;border-top:1px solid var(--line)}
+    .totals .row{display:flex;justify-content:space-between;gap:12px;color:var(--text-dim)}
+    .totals .row.total{color:var(--gold);font-weight:700;font-size:1.05rem}
+    .note,.error,.loading{margin-top:16px;padding:12px 14px;border-radius:12px;font-size:.95rem}
+    .note{background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.14);color:var(--text-dim)}
+    .error{display:none;background:rgba(140,36,36,.25);border:1px solid rgba(255,193,155,.25);color:var(--danger)}
+    .checkout-panel{padding:22px;min-height:660px}
+    .checkout-host{min-height:620px;border-radius:16px;overflow:hidden;background:#fff}
+    .loading{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:var(--text-dim)}
+    .footer{text-align:center;color:var(--text-dim);font-size:.9rem;margin-top:28px}
+    @media (max-width:980px){.layout{grid-template-columns:1fr}.summary{position:static}}
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <a class="brand" href="/"><h1>Amber's Alchemy Apothecary</h1><p>Secure checkout for handcrafted botanicals &amp; sacred subscriptions</p></a>
+      <a class="back-link" id="backLink" href="/">← Return to shop</a>
+    </div>
+    <div class="layout">
+      <aside class="card summary">
+        <div class="mode-badge" id="modeBadge">Preparing checkout…</div>
+        <h2 id="summaryTitle">Order Summary</h2>
+        <p id="summaryIntro">Loading your selected offerings.</p>
+        <div class="summary-list" id="summaryList"></div>
+        <div class="totals" id="totals"></div>
+        <div class="note" id="summaryNote">Shipping ($7 standard / $14 priority) and tax are calculated securely in the form.</div>
+        <div class="error" id="summaryError"></div>
+      </aside>
+      <section class="card checkout-panel">
+        <h2 id="checkoutHeading">Secure Checkout</h2>
+        <p id="checkoutBlurb">Please wait while the secure payment form is prepared.</p>
+        <div class="loading" id="loadingState">Connecting to Stripe…</div>
+        <div id="checkout" class="checkout-host"></div>
+      </section>
+    </div>
+    <div class="footer">Questions about your order? Reply to your confirmation email or contact <a href="mailto:awaken@consultant.com">awaken@consultant.com</a>.</div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(location.search);
+    const mode = params.get('mode') === 'subscription' ? 'subscription' : 'payment';
+    const els = ['modeBadge','summaryTitle','summaryIntro','summaryList','totals','summaryNote','summaryError','checkoutHeading','checkoutBlurb','loadingState','backLink']
+      .reduce((o,id)=>(o[id]=document.getElementById(id),o),{});
+    const money = c => `$${(c/100).toFixed(2)}`;
+
+    function readCheckout(){ try { return JSON.parse(localStorage.getItem('aa_checkout')) || {}; } catch { return {}; } }
+    function showError(msg){ els.summaryError.style.display='block'; els.summaryError.textContent=msg; els.loadingState.style.display='none'; document.getElementById('checkout').style.display='none'; }
+
+    async function loadPublishableKey(){
+      const res = await fetch('/.netlify/functions/stripe-config');
+      const data = await res.json();
+      if(!res.ok || !data.publishableKey) throw new Error('Payments are not configured yet. Please contact awaken@consultant.com.');
+      return data.publishableKey;
+    }
+
+    async function fetchClientSecret(){
+      const stored = readCheckout();
+      const payload = mode === 'subscription'
+        ? { mode:'subscription' }
+        : { cart: stored.cart || [], orderMeta: stored.orderMeta || {} };
+      const res = await fetch('/.netlify/functions/create-checkout-session', {
+        method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if(!res.ok || !data.clientSecret) throw new Error(data.error || 'Unable to start checkout.');
+      return data.clientSecret;
+    }
+
+    function renderSummary(){
+      if(mode === 'subscription'){
+        els.modeBadge.textContent='Subscription Checkout';
+        els.summaryTitle.textContent='The Living Grimoire';
+        els.summaryIntro.textContent='Membership to the hidden Grimoire & full herbal wisdom library.';
+        els.checkoutHeading.textContent='Secure Subscription Checkout';
+        els.checkoutBlurb.textContent='Complete your subscription below for instant access to the Grimoire.';
+        els.backLink.href='/#herb-index'; els.backLink.textContent='← Back to the Grimoire';
+        els.summaryList.innerHTML = `<div class="item"><div><strong>The Living Grimoire</strong><div class="meta">Monthly membership · 10% off orders · weekly recipes & rituals</div></div><div class="amt">$7.77/mo</div></div>`;
+        els.totals.innerHTML = `<div class="row"><span>Subscription</span><span>$7.77 / month</span></div><div class="row"><span>Billing</span><span>Recurring · cancel anytime</span></div><div class="row total"><span>Due today</span><span>$7.77 + tax</span></div>`;
+        els.summaryNote.textContent='Access is verified by your email after payment completes.';
+        return true;
+      }
+      const stored = readCheckout();
+      const cart = stored.cart || [];
+      if(!cart.length){
+        showError('Your cart is empty. Add something lovely before checking out.');
+        els.summaryTitle.textContent='Cart Empty'; els.summaryIntro.textContent='No items found.';
+        return false;
+      }
+      let subtotal = 0;
+      els.summaryList.innerHTML = cart.map(it=>{
+        const cents = Math.round((Number(it.price)||0)*100) * (it.qty||1);
+        subtotal += cents;
+        const opts = it.options && Object.keys(it.options).length
+          ? `<div class="meta">${Object.entries(it.options).filter(([,v])=>v&&v!=='—').map(([k,v])=>`${k}: ${v}`).join(' · ')}</div>` : '';
+        return `<div class="item"><div><strong>${it.name||'Item'}</strong><div class="meta">Qty ${it.qty||1}</div>${opts}</div><div class="amt">${money(cents)}</div></div>`;
+      }).join('');
+      els.modeBadge.textContent='Product Checkout';
+      els.summaryIntro.textContent='Review your selections, then complete payment securely.';
+      els.totals.innerHTML = `<div class="row"><span>Subtotal</span><span>${money(subtotal)}</span></div><div class="row"><span>Shipping</span><span>$7 standard / $14 priority</span></div><div class="row total"><span>Total before tax</span><span>${money(subtotal)} + shipping</span></div>`;
+      return true;
+    }
+
+    async function mount(){
+      if(!renderSummary()) return;
+      try{
+        const pk = await loadPublishableKey();
+        const stripe = Stripe(pk);
+        const checkout = await stripe.initEmbeddedCheckout({ fetchClientSecret });
+        els.loadingState.style.display='none';
+        checkout.mount('#checkout');
+      }catch(err){
+        console.error(err); showError(err.message||'Something went wrong while loading checkout.');
+        els.checkoutBlurb.textContent='The secure payment form could not be loaded.';
+      }
+    }
+    mount();
+  </script>
+</body>
+</html>

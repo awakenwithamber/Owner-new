@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thank You | Amber's Alchemy Apothecary</title>
+  <meta name="robots" content="noindex" />
+  <link rel="icon" type="image/svg+xml" href="images/icon-192.svg" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=EB+Garamond&display=swap" rel="stylesheet" />
+  <style>
+    body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 0%,#2a1a4a 0%,#150b26 55%);color:#f4e8d0;font-family:'EB Garamond',Georgia,serif;padding:24px}
+    .card{max-width:540px;text-align:center;background:#1f1336;border:1px solid rgba(212,175,55,.25);border-radius:16px;padding:48px 32px;box-shadow:0 24px 60px rgba(0,0,0,.35)}
+    h1{font-family:'Cinzel Decorative',serif;color:#d4af37;font-size:1.6rem;margin:0 0 16px}
+    p{line-height:1.75;color:#cdbb94}
+    a.btn{display:inline-block;margin-top:24px;padding:12px 28px;background:#d4af37;color:#150b26;text-decoration:none;border-radius:8px;font-weight:700}
+    .icon{font-size:3rem;margin-bottom:12px}
+  </style>
+</head>
+<body>
+  <div class="card" id="card">
+    <div class="icon">✦</div>
+    <h1>Confirming…</h1>
+    <p>One moment while we seal your order.</p>
+  </div>
+<script>
+const sessionId = new URLSearchParams(location.search).get('session_id');
+(async () => {
+  const card = document.getElementById('card');
+  if(!sessionId){ card.querySelector('h1').textContent='Order not found'; return; }
+  try{
+    const data = await fetch('/.netlify/functions/session-status?session_id='+encodeURIComponent(sessionId)).then(r=>r.json());
+    if(data.status === 'complete'){
+      try{ localStorage.removeItem('aa_checkout'); localStorage.removeItem('aa_cart'); }catch(e){}
+      const isSub = data.type === 'grimoire_subscription';
+      card.innerHTML = `
+        <div class="icon">${isSub ? '🔮' : '🌿'}</div>
+        <h1>${isSub ? 'Welcome to the Grimoire' : 'Your Order Is Confirmed'}</h1>
+        <p>${isSub
+          ? 'Your subscription is active. A welcome email with your access details is on its way to <strong>'+(data.email||'your inbox')+'</strong>.'
+          : 'Thank you for supporting handcrafted botanical magic. A confirmation has been sent to <strong>'+(data.email||'your inbox')+'</strong>. Your order is being prepared by hand, with intention.'}</p>
+        <a class="btn" href="${isSub ? '/#herb-index' : '/'}">${isSub ? '✦ Open the Grimoire' : 'Continue Exploring'}</a>`;
+    } else {
+      card.querySelector('h1').textContent='Payment not completed';
+      card.querySelector('p').textContent='If you were charged, contact awaken@consultant.com and we will sort it immediately.';
+    }
+  }catch(e){
+    card.querySelector('h1').textContent='Could not confirm';
+    card.querySelector('p').textContent='Please check your email for a receipt, or contact awaken@consultant.com.';
+  }
+})();
+</script>
+</body>
+</html>

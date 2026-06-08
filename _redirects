@@ -1,0 +1,9 @@
+# Netlify SPA fallback for Amber's Alchemy Apothecary.
+# Pretty section URLs (/shop, /soaps, /bundles, /grimoire-membership, /about, ...)
+# have no static file, so serve the app shell (200, not a 301) and let
+# navigation-history.js route to the right section from location.pathname.
+#
+# Netlify serves real files first (checkout.html, grimoir.html, /js/*, /css/*,
+# /images/*, sitemap.xml, robots.txt) and /.netlify/functions/* before this rule,
+# so only unknown paths fall through to the app.
+/*    /index.html   200

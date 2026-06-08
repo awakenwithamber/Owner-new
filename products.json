@@ -1,0 +1,42 @@
+{
+  "_README": "Authoritative catalog for Amber's Alchemy Apothecary. Prices are in CENTS (999 = $9.99). The checkout function validates every order against this file, so a tampered browser cart cannot change prices. Edit here and redeploy to update pricing everywhere.",
+  "currency": "usd",
+  "shipping": { "standard": 700, "priority": 1400 },
+  "freebie": "Every order includes a complimentary mini lip balm and a personalized thank-you note from Amber.",
+  "products": [
+    { "id": "hair-serum", "name": "Miracle Hair Regrowth Serum", "category": "serum", "price": 2499,
+      "variants": [ { "label": "2 oz", "price": 2499 }, { "label": "3 oz", "price": 3399 }, { "label": "4 oz", "price": 4199 } ] },
+
+    { "id": "all-in-one-balm", "name": "Ultimate All-in-One Balm", "category": "balm", "price": 2499,
+      "variants": [ { "label": "Lip Balm Sample", "price": 599 }, { "label": "2 oz", "price": 2499 }, { "label": "3 oz", "price": 3399 }, { "label": "4 oz", "price": 4199 } ] },
+
+    { "id": "pain-balm", "name": "Ultimate Pain Relief Balm", "category": "balm", "price": 2499,
+      "variants": [ { "label": "Lip Balm Sample", "price": 599 }, { "label": "2 oz", "price": 2499 }, { "label": "3 oz", "price": 3399 }, { "label": "4 oz", "price": 4199 } ] },
+
+    { "id": "custom-tincture", "name": "Custom Herbal Tincture", "category": "tincture", "price": 1999,
+      "variants": [ { "label": "1 oz", "price": 1999 }, { "label": "2 oz", "price": 3499 }, { "label": "4 oz", "price": 5999 } ] },
+
+    { "id": "custom-capsules", "name": "Custom Herbal Capsules", "category": "capsule", "price": 2499,
+      "variants": [ { "label": "2 Week Supply", "price": 2499 }, { "label": "1 Month Supply (60 Capsules)", "price": 4499 } ] },
+
+    { "id": "loose-leaf-tea", "name": "Loose Leaf Herbal Tea", "category": "tea", "price": 1333,
+      "variants": [ { "label": "1 oz", "price": 1333 }, { "label": "2 oz", "price": 2499 }, { "label": "4 oz", "price": 4499 } ] },
+
+    { "id": "custom-tea-bags", "name": "Custom Tea Bags", "category": "tea", "price": 799,
+      "variants": [ { "label": "10 Tea Bags", "price": 799 }, { "label": "20 Tea Bags", "price": 1199 }, { "label": "40 Tea Bags", "price": 1999 } ] },
+
+    { "id": "artisan-soap", "name": "Artisan Herbal Soap", "category": "soap", "price": 999,
+      "variants": [ { "label": "Single Bar", "price": 999 }, { "label": "3 Pack", "price": 2499 }, { "label": "6 Pack", "price": 4499 } ] },
+
+    { "id": "custom-soap", "name": "Custom Botanical Soap", "category": "soap", "price": 999 },
+
+    { "id": "bundle-stress-free", "name": "Stress-Free Serenity Bundle", "category": "bundle", "price": 4999 },
+    { "id": "bundle-energize", "name": "Energize & Uplift Bundle", "category": "bundle", "price": 4999 },
+    { "id": "bundle-deep-sleep", "name": "Deep Sleep & Dream Bundle", "category": "bundle", "price": 4999 },
+    { "id": "bundle-detox", "name": "Detox & Renew Bundle", "category": "bundle", "price": 4999 },
+    { "id": "bundle-glow", "name": "Glow & Radiance Bundle", "category": "bundle", "price": 4999 },
+    { "id": "bundle-signature", "name": "Signature Wellness Bundle", "category": "bundle", "price": 4999 },
+    { "id": "bundle-premium-herbal-ally", "name": "Premium Personalized Herbal Ally Bundle", "category": "bundle", "price": 8888 },
+    { "id": "bundle-transformation", "name": "Complete Transformation Collection", "category": "bundle", "price": 11111 }
+  ]
+}

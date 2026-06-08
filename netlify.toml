@@ -1,0 +1,14 @@
+# Netlify configuration for awakenagain.com
+[build]
+  publish = "."
+  command = ""
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# Friendly pretty URLs are handled by the static files themselves.
+# (index.html is the single-page app; checkout.html / grimoir.html are standalone.)
