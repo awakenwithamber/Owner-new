@@ -3178,8 +3178,8 @@
     <script src="soap-gallery.js"></script>
 
 <!-- Product Image Lightbox -->
-<div id="productLightbox" class="product-lightbox-overlay" style="display:none;">
-  <button class="product-lightbox-close" aria-label="Close">&times;</button>
+<div id="productLightbox" class="product-lightbox-overlay" style="display:none;" onclick="if(event.target===this)this.style.display='none'">
+  <button class="product-lightbox-close" aria-label="Close" onclick="document.getElementById('productLightbox').style.display='none'">&times;</button>
   <img class="product-lightbox-img" src="" alt="Full size product image" />
 </div>
 <script>
